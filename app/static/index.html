@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lightning AutoML</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-shell">
+
+  <!-- ── Topbar ─────────────────────────────────────────────────────────── -->
+  <header class="topbar">
+    <div class="topbar-brand">
+      <div class="brand-icon">⚡</div>
+      <span class="brand-name">Lightning <span>AutoML</span></span>
+    </div>
+    <div class="topbar-actions">
+      <span class="session-badge" id="session-badge"></span>
+      <button class="btn btn-danger" id="btn-clear-session" style="padding:8px 14px;font-size:0.7rem">
+        ✕ Clear Session
+      </button>
+    </div>
+  </header>
+
+  <!-- ── Step nav ───────────────────────────────────────────────────────── -->
+  <nav class="steps-nav" aria-label="Pipeline steps">
+    <div class="step-item active" data-step="0">
+      <div class="step-num">1</div>
+      <span class="step-label">Home</span>
+    </div>
+    <div class="step-item" data-step="1">
+      <div class="step-num">2</div>
+      <span class="step-label">Upload</span>
+    </div>
+    <div class="step-item" data-step="2">
+      <div class="step-num">3</div>
+      <span class="step-label">Analyze</span>
+    </div>
+    <div class="step-item" data-step="3">
+      <div class="step-num">4</div>
+      <span class="step-label">Insights</span>
+    </div>
+    <div class="step-item" data-step="4">
+      <div class="step-num">5</div>
+      <span class="step-label">Preprocess</span>
+    </div>
+    <div class="step-item" data-step="5">
+      <div class="step-num">6</div>
+      <span class="step-label">Training</span>
+    </div>
+    <div class="step-item" data-step="6">
+      <div class="step-num">7</div>
+      <span class="step-label">Results</span>
+    </div>
+    <div class="step-item" data-step="7">
+      <div class="step-num">8</div>
+      <span class="step-label">Predict</span>
+    </div>
+    <div class="step-item" data-step="8">
+      <div class="step-num">9</div>
+      <span class="step-label">Download</span>
+    </div>
+  </nav>
+
+  <!-- ── Content ────────────────────────────────────────────────────────── -->
+  <main class="content">
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 1: HOME                                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen active" data-screen="home">
+
+      <!-- Restore banner -->
+      <div id="restore-banner" class="alert alert-info hidden" style="margin-bottom:24px;justify-content:space-between">
+        <span>⚡ Session found — Stage: <strong class="restore-stage"></strong> · Project: <strong class="restore-project"></strong></span>
+        <button class="btn btn-outline" id="btn-restore" style="padding:6px 14px;font-size:0.7rem">Resume →</button>
+      </div>
+
+      <div class="home-hero">
+        <div class="hero-badge">⚡ Powered by LLM + AutoML</div>
+
+        <h1 class="hero-title">
+          Automated ML<br><span class="accent">Pipeline Builder</span>
+        </h1>
+
+        <p class="hero-desc">
+          Upload your dataset and get a production-ready ML model in minutes.
+          No code. No configuration. Just results.
+        </p>
+
+        <div class="hero-features">
+          <div class="feature-chip"><div class="dot"></div>LLM-driven data analysis</div>
+          <div class="feature-chip"><div class="dot"></div>Auto preprocessing</div>
+          <div class="feature-chip"><div class="dot"></div>7 models compared</div>
+          <div class="feature-chip"><div class="dot"></div>Feature engineering</div>
+          <div class="feature-chip"><div class="dot"></div>Live predictions</div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" id="btn-start">
+          Upload Dataset →
+        </button>
+
+        <p class="text-muted" style="margin-top:8px">Supports CSV · Excel · JSON · Max 50 MB</p>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 2: UPLOAD                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="upload">
+
+      <div class="section-header">
+        <h2 class="section-title">Upload Dataset <span class="tag">STEP 1</span></h2>
+        <button class="btn btn-ghost" id="btn-open-upload">Browse files</button>
+      </div>
+
+      <input type="file" id="file-input" accept=".csv,.xlsx,.xls,.json">
+
+      <div class="upload-zone" id="upload-zone">
+        <div class="upload-icon">📂</div>
+        <div class="upload-title">Drop your dataset here</div>
+        <div class="upload-hint">CSV · Excel · JSON &nbsp;·&nbsp; Max 50 MB</div>
+      </div>
+
+      <!-- Dataset info (hidden until upload) -->
+      <div id="dataset-info-section" class="hidden" style="margin-top:28px">
+        <div class="dataset-card">
+          <div class="dataset-header">
+            <span class="dataset-filename" id="ds-filename">—</span>
+            <span class="alert alert-success" style="padding:6px 12px;margin:0">✓ Uploaded</span>
+          </div>
+
+          <div class="dataset-meta">
+            <div class="meta-stat">
+              <span class="val" id="ds-rows">—</span>
+              <span class="lbl">Rows</span>
+            </div>
+            <div class="meta-stat">
+              <span class="val" id="ds-cols">—</span>
+              <span class="lbl">Columns</span>
+            </div>
+            <div class="meta-stat">
+              <span class="val" id="ds-missing">—</span>
+              <span class="lbl">Missing vals</span>
+            </div>
+          </div>
+
+          <!-- Preview table -->
+          <div class="card-title">Data Preview (5 rows)</div>
+          <div class="table-wrap" id="preview-table-wrap"></div>
+        </div>
+
+        <!-- Config form -->
+        <div class="config-form" id="config-section">
+          <div class="card-title" style="margin-bottom:20px">Configure Pipeline</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Project Name</label>
+              <input type="text" id="project-name" class="form-control" placeholder="my_project">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Column</label>
+              <select id="target-col-select" class="form-control"></select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Task Type</label>
+              <select id="task-select" class="form-control">
+                <option value="Classification">Classification</option>
+                <option value="Regression">Regression</option>
+                <option value="Clustering">Clustering</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">ML Type</label>
+              <select id="ml-type-select" class="form-control">
+                <option value="Supervised">Supervised</option>
+                <option value="Unsupervised">Unsupervised</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Test Split</label>
+              <select id="test-size" class="form-control">
+                <option value="0.1">10%</option>
+                <option value="0.15">15%</option>
+                <option value="0.2" selected>20%</option>
+                <option value="0.25">25%</option>
+                <option value="0.3">30%</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-4">
+            <button class="btn btn-primary" id="btn-confirm-config">
+              Confirm & Analyze →
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 3: ANALYZE (progress)                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="analyze">
+
+      <div class="section-header">
+        <h2 class="section-title">Analysing Dataset <span class="tag">STEP 2</span></h2>
+      </div>
+
+      <div class="progress-container">
+        <div class="card-title" id="progress-label">Initialising…</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-pct" id="progress-pct">0%</div>
+
+        <div class="progress-steps" id="analysis-steps"></div>
+      </div>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 4: INSIGHTS                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="insights">
+
+      <div class="section-header">
+        <h2 class="section-title">Data Insights <span class="tag">STEP 3</span></h2>
+        <button class="btn btn-primary" id="btn-to-preprocess">Review Plan →</button>
+      </div>
+
+      <!-- Quality score -->
+      <div class="card">
+        <div class="card-title">Dataset Quality</div>
+        <div class="quality-ring-wrap">
+          <div class="quality-score-big" id="quality-score">—</div>
+          <div>
+            <div class="quality-label" id="quality-score-sub">Calculating…</div>
+            <div class="text-muted">/100 quality score</div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+          <div>
+            <div class="card-title">Key Features</div>
+            <div class="feature-tags" id="key-features"></div>
+          </div>
+          <div>
+            <div class="card-title">Dropped Columns</div>
+            <div class="feature-tags" id="dropped-cols"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts row -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+
+        <div class="card">
+          <div class="card-title">Missing Values (%)</div>
+          <div id="missing-chart"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Outliers Detected</div>
+          <div id="outliers-chart"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Feature Correlations</div>
+          <div id="corr-chart"></div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 5: PREPROCESSING PLAN                                        -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="preprocess">
+
+      <div class="section-header">
+        <h2 class="section-title">Data Cleaning Plan <span class="tag">STEP 4</span></h2>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost" onclick="setScreen('insights')">← Back</button>
+          <button class="btn btn-primary" id="btn-accept-plan">Accept & Train →</button>
+        </div>
+      </div>
+
+      <div class="card mb-6">
+        <div class="card-title">Pipeline Steps</div>
+        <div class="plan-grid">
+          <div class="plan-item">
+            <div class="plan-item-label">Missing Values</div>
+            <div class="plan-item-value" id="plan-missing">—</div>
+          </div>
+          <div class="plan-item">
+            <div class="plan-item-label">Outlier Method</div>
+            <div class="plan-item-value" id="plan-outliers">—</div>
+          </div>
+          <div class="plan-item">
+            <div class="plan-item-label">Scaling</div>
+            <div class="plan-item-value" id="plan-scaling">—</div>
+          </div>
+          <div class="plan-item">
+            <div class="plan-item-label">Encoding</div>
+            <div class="plan-item-value" id="plan-encoding">—</div>
+          </div>
+          <div class="plan-item">
+            <div class="plan-item-label">Original Features</div>
+            <div class="plan-item-value" id="plan-orig-feat">—</div>
+          </div>
+          <div class="plan-item">
+            <div class="plan-item-label">Recommended Features</div>
+            <div class="plan-item-value" id="plan-rec-feat">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-6">
+        <div class="card-title">Feature Engineering Suggestions</div>
+        <div id="plan-fe"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Key Insights</div>
+        <ul id="plan-insights" style="padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:0.88rem;color:var(--text-dim)"></ul>
+      </div>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 6: TRAINING                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="training">
+
+      <div class="section-header">
+        <h2 class="section-title">Training Models <span class="tag">STEP 5</span></h2>
+      </div>
+
+      <div class="progress-container">
+        <div class="card-title" id="train-progress-label">Preprocessing & training…</div>
+        <div class="progress-bar-wrap">
+          <div class="progress-bar" id="train-progress-bar" style="width:0%"></div>
+        </div>
+        <div class="progress-pct" id="train-progress-pct">0%</div>
+
+        <div class="progress-steps" id="training-steps"></div>
+      </div>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 7: RESULTS                                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="results">
+
+      <div class="section-header">
+        <h2 class="section-title">Results <span class="tag">STEP 6</span></h2>
+        <div class="flex gap-2">
+          <button class="btn btn-ghost" id="btn-to-download">↓ Download</button>
+          <button class="btn btn-primary" id="btn-to-predict">Try Predictions →</button>
+        </div>
+      </div>
+
+      <!-- Best model card -->
+      <div class="best-model-card">
+        <div class="card-title" style="color:var(--text-muted)">BEST MODEL</div>
+        <div class="best-model-name" id="best-model-name">—</div>
+        <div class="best-model-score" id="best-model-score"></div>
+        <div class="metrics-grid" id="metrics-grid"></div>
+      </div>
+
+      <!-- LLM analysis -->
+      <div id="llm-analysis-section" class="card hidden mb-6">
+        <div class="card-title">AI Analysis</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px">
+          <div>
+            <div class="text-muted mb-2">Best model selected:</div>
+            <div class="text-mono" id="llm-best-model" style="color:var(--accent)"></div>
+            <div class="llm-box mt-2" id="llm-analysis"></div>
+          </div>
+          <div>
+            <div class="text-muted mb-2">Recommendations:</div>
+            <div class="llm-box" id="llm-recommendations"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Model table -->
+      <div class="card">
+        <div class="card-title">All Models</div>
+        <div class="table-wrap">
+          <table class="model-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Primary Score</th>
+                <th>Fit Time</th>
+              </tr>
+            </thead>
+            <tbody id="models-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Chart -->
+      <div class="card chart-container mt-4">
+        <div class="card-title">Model Comparison</div>
+        <canvas id="model-chart" height="120"></canvas>
+      </div>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 8: PREDICT                                                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="predict">
+
+      <div class="section-header">
+        <h2 class="section-title">Predictions <span class="tag">STEP 7</span></h2>
+        <button class="btn btn-ghost" onclick="setScreen('results')">← Results</button>
+      </div>
+
+      <div class="predict-layout">
+        <!-- Input form -->
+        <div class="card">
+          <div class="card-title">Enter Feature Values</div>
+          <div class="predict-fields" id="predict-fields"></div>
+          <div class="mt-4">
+            <button class="btn btn-primary w-full" id="btn-run-predict">
+              ⚡ Run Prediction
+            </button>
+          </div>
+          <div id="predict-result-area" class="mt-4"></div>
+        </div>
+
+        <!-- History -->
+        <div class="card">
+          <div class="card-title">Prediction History</div>
+          <div class="history-list" id="pred-history">
+            <span class="text-muted">No predictions yet</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <!-- SCREEN 9: DOWNLOAD                                                  -->
+    <!-- ═══════════════════════════════════════════════════════════════════ -->
+    <section class="screen" data-screen="download">
+
+      <div class="section-header">
+        <h2 class="section-title">Download <span class="tag">STEP 8</span></h2>
+        <button class="btn btn-ghost" onclick="setScreen('results')">← Results</button>
+      </div>
+
+      <div class="card mb-6">
+        <div class="card-title">Available Files</div>
+        <p class="text-muted mb-6">All files from the current session are available for download.</p>
+        <div class="download-grid" id="download-grid">
+          <span class="text-muted">Loading…</span>
+        </div>
+      </div>
+
+    </section>
+
+  </main><!-- /content -->
+</div><!-- /app-shell -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
